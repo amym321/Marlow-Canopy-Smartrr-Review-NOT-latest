@@ -64,7 +64,7 @@ if (typeof window.initSmartrr === "undefined") {
       if (this.$form === null) {
         /*
           If form wasn't explicitly labeled by merchant with FORM.tag, then we will search for a form
-          inside our fieldset "smartrr-purchase-options" defined at smartrr-product.liquid.ts
+          inside our fieldset "smartrr-purchase-options" defined at smartrr-product.liquid.ts 
         */
         var fieldset = this.apiQuerySelectorDataTag(
           this.tagList.PURCHASE_OPTIONS,
@@ -249,10 +249,6 @@ if (typeof window.initSmartrr === "undefined") {
 
         groups.forEach(function (group) {
           var groupId = that.apiGetAttribute(group, that.tagList.SELLING_PLAN_GROUP);
-
-          // We don't want to hide the subscription button even for variants that aren't subscribeable.
-          return;
-
           if (groupId === "") {
             return;
           }
@@ -297,21 +293,24 @@ if (typeof window.initSmartrr === "undefined") {
           return "";
         }
 
-        var firstPlan = this.logic.apiGetAnySellingPlanAllocationByVariantGroupId(
-          currentInfo.variantId,
-          currentInfo.groupId
-        );
-        if (firstPlan) {
-          return String(firstPlan.selling_plan_id);
-        }
-
         var plans = this.apiQuerySelectorAllDataTag(
           this.tagList.SELLING_PLAN_GROUP_FREQUENCY_INPUT,
           this.$form,
           currentInfo.groupId
         );
 
-        return plans.length ? this.apiGetValue(plans[0]) : "";
+        if (plans.length) {
+          return this.apiGetValue(plans[0]);
+        } else {
+          var firstPlan = this.logic.apiGetAnySellingPlanAllocationByVariantGroupId(
+            currentInfo.variantId,
+            currentInfo.groupId
+          );
+          if (firstPlan) {
+            return String(firstPlan.selling_plan_id);
+          }
+        }
+        return "";
       },
 
       apiGetFirstGroup: function (currentInfo) {
@@ -837,7 +836,7 @@ if (typeof window.initSmartrr === "undefined") {
               minimumFractionDigits: 2,
             }).format(value / 100);
           }
-          return "$" + String(value / 100) ;
+          return "$" + String(value / 100);
         }
         return "$INVALID";
       },
@@ -855,17 +854,11 @@ if (typeof window.initSmartrr === "undefined") {
       },
     });
 
-    if (document.readyState === "complete" || document.readyState === "loaded") {
+    document.addEventListener("DOMContentLoaded", function () {
       if (window.smartrrProductList && window.smartrrProductList[uniqueId]) {
         new UIHandler(window.smartrrProductList[uniqueId]);
       }
-    } else {
-      document.addEventListener("DOMContentLoaded", function () {
-        if (window.smartrrProductList && window.smartrrProductList[uniqueId]) {
-          new UIHandler(window.smartrrProductList[uniqueId]);
-        }
-      });
-    }
+    });
 
     window.addEventListener("pageshow", function () {
       if (window.smartrrProductList && window.smartrrProductList[uniqueId]) {
